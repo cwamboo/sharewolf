@@ -28,7 +28,7 @@ const keyOf = (name: string) => normalizeName(name).toLowerCase();
 export function colorFor(name: string): RacerColor {
   let h = 0;
   for (const c of keyOf(name)) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-  return RACER_COLORS[h % RACER_COLORS.length];
+  return RACER_COLORS[h % RACER_COLORS.length] ?? "coral";
 }
 
 export const formatMoney = (n: number) =>

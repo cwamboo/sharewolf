@@ -14,7 +14,7 @@ const TEXT: Record<string, string> = {
 };
 const VEHICLES = ["🏆", "🚀", "🐎", "🐢", "🚲", "🛴", "🐌", "🦆"];
 
-export function RaceTrack({ racers, highlight }: { racers: Racer[]; highlight?: string }) {
+export function RaceTrack({ racers, highlight }: { racers: Racer[]; highlight?: string | undefined }) {
   const max = Math.max(...racers.map((r) => r.total), 1);
 
   return (
