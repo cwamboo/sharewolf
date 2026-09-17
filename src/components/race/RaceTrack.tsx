@@ -12,50 +12,45 @@ const TEXT: Record<string, string> = {
   grape: "text-grape",
   sun: "text-ink/70",
 };
-const VEHICLES = ["🏆", "🚀", "🐎", "🐢", "🚲", "🛴", "🐌", "🦆"];
-
 export function RaceTrack({ racers, highlight }: { racers: Racer[]; highlight?: string | undefined }) {
   const max = Math.max(...racers.map((r) => r.total), 1);
 
   return (
-    <section className="card-arcade p-5 sm:p-6">
+    <section className="p-1">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="font-display text-lg font-bold">Race track</h2>
-        <span className="text-xs font-bold text-ink/40">distance = total amount</span>
+        <h2 className="font-display text-sm uppercase">Track progress</h2>
+        <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-mint">Distance = order volume</span>
       </div>
 
       {racers.length === 0 ? (
-        <p className="py-10 text-center text-sm font-bold text-ink/50">
+        <p className="border border-mint/20 py-10 text-center text-sm font-bold text-mint">
           No racers yet. Sellers join with their name and log their first order to appear here.
         </p>
       ) : (
-        <div className="space-y-5">
+        <div className="space-y-3">
           {racers.map((r, i) => {
             const color = colorFor(r.name);
             const pct = Math.max(8, Math.round((r.total / max) * 100));
             const me = highlight && r.name.toLowerCase() === highlight.toLowerCase();
             return (
-              <div key={r.name} className="animate-fade-in">
-                <div className="mb-1.5 flex items-end justify-between gap-2">
+              <div key={r.name} className="race-stripe animate-fade-in border border-mint/10 px-3 py-2">
+                <div className="mb-2 flex items-end justify-between gap-2">
                   <div className="flex min-w-0 items-center gap-2">
-                    <span className="grid size-7 shrink-0 place-items-center rounded-full bg-sun text-sm font-bold">
-                      {i + 1}
+                    <span className={`grid h-8 w-12 shrink-0 place-items-center font-display text-xs italic ${i === 0 ? "bg-coral text-cream" : "bg-mint text-ink"}`}>
+                      P{i + 1}
                     </span>
-                    <span className="truncate font-display text-base font-bold">
+                    <span className="truncate text-sm font-bold uppercase italic">
                       {r.name}
-                      {me && <span className="ml-2 text-xs text-coral">you</span>}
+                      {me && <span className="ml-2 text-[10px] not-italic text-coral">YOU</span>}
                     </span>
                   </div>
                   <span className={`font-display text-lg font-bold ${TEXT[color]}`}>{formatMoney(r.total)}</span>
                 </div>
-                <div className="h-9 w-full overflow-hidden rounded-full border-2 border-ink/10 bg-ink/5">
+                <div className="h-3 w-full -skew-x-12 overflow-hidden border border-mint/20 bg-ink">
                   <div
-                    className={`flex h-full items-center justify-end rounded-full pr-3 transition-[width] duration-700 ease-out ${BAR[color]}`}
+                    className={`h-full transition-[width] duration-700 ease-out ${BAR[color]}`}
                     style={{ width: `${pct}%` }}
                   >
-                    <span key={r.total} className="animate-racer-pop text-lg">
-                      {VEHICLES[Math.min(i, VEHICLES.length - 1)]}
-                    </span>
                   </div>
                 </div>
               </div>
