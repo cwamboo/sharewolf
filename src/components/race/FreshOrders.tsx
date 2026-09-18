@@ -2,13 +2,13 @@ import { colorFor, formatMoney, type Order } from "@/lib/race-store";
 
 const AVATAR: Record<string, string> = {
   coral: "bg-coral/15 text-coral",
-  mint: "bg-mint/15 text-mint",
+  mint: "bg-mint/15 text-cream",
   grape: "bg-grape/15 text-grape",
-  sun: "bg-sun/30 text-ink",
+  sun: "bg-sun/30 text-cream",
 };
 const BADGE: Record<string, string> = {
   coral: "bg-coral text-cream",
-  mint: "bg-mint text-cream",
+  mint: "bg-mint text-ink",
   grape: "bg-grape text-cream",
   sun: "bg-sun text-ink",
 };
