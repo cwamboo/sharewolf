@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/race/SiteHeader";
 import { RaceTrack } from "@/components/race/RaceTrack";
 import { FreshOrders } from "@/components/race/FreshOrders";
@@ -51,94 +52,80 @@ function Dashboard() {
         }
       />
 
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-5">
-        <section className="mb-7">
-          <p className="text-xs font-extrabold uppercase tracking-[0.25em] text-grape">Live standings</p>
-          <h1 className="mt-1 font-display text-5xl font-bold leading-[0.95] sm:text-7xl">
-            The <span className="text-coral">Order</span> <span className="text-mint">Sprint</span>
-          </h1>
-          <p className="mt-3 max-w-md text-sm font-semibold text-ink/60">
-            Sellers punch in confirmed orders. The bigger the total, the further they race ahead. First to the flag.
-          </p>
-        </section>
-
-        <RaceTrack racers={racers} highlight={seller ?? undefined} />
-
-        <div className="mt-6 grid gap-6 lg:grid-cols-5">
-          <div className="lg:col-span-3">
-            <FreshOrders orders={orders} />
+      <main className="mx-auto grid max-w-7xl gap-6 px-4 py-5 md:grid-cols-12 md:py-8">
+        <aside className="telemetry-panel flex flex-col p-4 md:col-span-4 lg:col-span-3">
+          <div className="mb-4 flex items-center gap-3">
+            <span className="h-8 w-2 bg-coral" />
+            <h2 className="font-display text-lg uppercase">Timing tower</h2>
+          </div>
+          <div className="mb-2 grid grid-cols-[2.5rem_1fr_auto] text-[9px] font-bold uppercase tracking-[0.16em] text-mint">
+            <span>Pos</span><span>Seller</span><span>Volume</span>
+          </div>
+          <div className="space-y-1">
+            {racers.length === 0 ? (
+              <p className="border-y border-mint/15 py-8 text-center text-xs text-mint">Grid awaiting drivers</p>
+            ) : racers.map((r, i) => (
+              <div key={r.name} className={`grid grid-cols-[2.5rem_1fr_auto] items-center border-b border-mint/15 px-2 py-3 ${i === 0 ? "border-l-4 border-l-coral bg-coral/10" : "bg-mint/5"}`}>
+                <span className={`font-display text-sm ${i === 0 ? "text-coral" : "text-mint"}`}>P{i + 1}</span>
+                <span className="truncate pr-2 text-xs font-bold uppercase">{r.name}</span>
+                <span className="text-xs font-bold tabular-nums">{formatMoney(r.total)}</span>
+              </div>
+            ))}
           </div>
 
-          <div className="lg:col-span-2">
-            <section className="rounded-[2rem] border-4 border-ink bg-ink p-5 text-cream shadow-hard-coral">
-              <h2 className="font-display text-lg font-bold">Jump in the race</h2>
-              <p className="mt-1 text-xs font-semibold text-cream/60">
-                No password. Just your name — your score follows you back if you return.
-              </p>
-              {seller ? (
-                <div className="mt-4 space-y-3">
-                  <p className="text-sm font-bold">
-                    Welcome back, <span className="text-sun">{seller}</span>
-                  </p>
-                  <Link
-                    to="/seller"
-                    className="block w-full rounded-2xl bg-coral py-3.5 text-center font-display text-base font-bold text-cream transition active:translate-y-0.5"
-                  >
-                    Continue racing →
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => setSeller(null)}
-                    className="w-full text-xs font-bold text-cream/50 underline-offset-2 hover:underline"
-                  >
-                    Not you? Switch seller
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={join}>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Your seller name"
-                    autoComplete="off"
-                    className="mt-4 w-full rounded-2xl border-2 border-cream/20 bg-cream/10 px-4 py-3 text-sm font-bold text-cream placeholder:text-cream/40 focus:border-sun focus:outline-none"
-                  />
-                  <button
-                    type="submit"
-                    className="mt-3 w-full rounded-2xl bg-coral py-3.5 font-display text-base font-bold text-cream transition active:translate-y-0.5"
-                  >
-                    Start racing →
-                  </button>
-                </form>
-              )}
-            </section>
-
-            <div className="mt-6">
-              <Podium racers={racers} />
-            </div>
-          </div>
-        </div>
-
-        {ready && (
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-xs font-bold text-ink/40">
-            {orders.length === 0 ? (
-              <button type="button" onClick={loadDemo} className="pill bg-card text-ink hover:bg-sun">
-                Load demo racers
-              </button>
+          <section className="mt-6 border-t border-mint/20 pt-5 md:mt-auto">
+            <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-mint">Paddock entry</p>
+            {seller ? (
+              <div className="mt-3 space-y-3">
+                <p className="text-sm font-semibold">Driver: <span className="text-coral">{seller}</span></p>
+                <Link to="/seller" className="block -skew-x-6 bg-coral py-3 text-center font-display text-sm uppercase text-cream transition hover:skew-x-0">
+                  <span className="inline-block skew-x-6">Enter pits →</span>
+                </Link>
+                <Button type="button" variant="ghost" onClick={() => setSeller(null)} className="h-auto w-full text-xs text-mint hover:bg-mint/10 hover:text-cream">
+                  Switch seller
+                </Button>
+              </div>
             ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  if (confirm("Reset the whole race? All orders will be removed.")) resetRace();
-                }}
-                className="pill bg-card text-ink hover:bg-coral hover:text-cream"
-              >
-                Reset race
-              </button>
+              <form onSubmit={join} className="mt-3">
+                <label className="sr-only" htmlFor="seller-name">Seller name</label>
+                <input id="seller-name" type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Seller name" autoComplete="off" className="h-11 w-full border border-mint/25 bg-mint/5 px-3 text-sm font-bold text-cream placeholder:text-mint focus:border-coral focus:outline-none" />
+                <Button type="submit" className="mt-2 h-12 w-full -skew-x-6 rounded-none bg-coral font-display text-xs uppercase text-cream shadow-none hover:bg-coral/90">
+                  <span className="skew-x-6">Join the grid</span>
+                </Button>
+              </form>
             )}
+          </section>
+        </aside>
+
+        <div className="flex min-w-0 flex-col gap-6 md:col-span-8 lg:col-span-9">
+          <section className="flex flex-col gap-4 border-b-2 border-mint/20 pb-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-coral">Live championship</p>
+              <h1 className="mt-1 font-display text-4xl uppercase leading-none sm:text-5xl">Seller Grand Prix</h1>
+              <p className="mt-2 max-w-xl text-sm text-mint">Every confirmed order adds distance. The highest sales total leads the field.</p>
+            </div>
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <span className="size-2 animate-pulse rounded-full bg-coral" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-mint">Live telemetry</span>
+            </div>
+          </section>
+
+          <div className="grid gap-5 xl:grid-cols-[1fr_1.45fr]">
+            <Podium racers={racers} />
+            <RaceTrack racers={racers} highlight={seller ?? undefined} />
           </div>
-        )}
+          <FreshOrders orders={orders} />
+
+          {ready && (
+            <div className="flex justify-end">
+              {orders.length === 0 ? (
+                <Button type="button" variant="outline" onClick={loadDemo} className="border-mint/25 bg-mint/5 text-xs uppercase text-cream hover:bg-coral hover:text-cream">Load demo grid</Button>
+              ) : (
+                <Button type="button" variant="outline" onClick={() => { if (confirm("Reset the whole race? All orders will be removed.")) resetRace(); }} className="border-mint/25 bg-mint/5 text-xs uppercase text-cream hover:bg-destructive hover:text-cream">Reset grid</Button>
+              )}
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );

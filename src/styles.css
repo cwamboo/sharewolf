@@ -60,8 +60,8 @@
   --mint: oklch(0.72 0.025 250);
   --grape: oklch(0.47 0.12 255);
 
-  --background: var(--cream);
-  --foreground: var(--ink);
+  --background: var(--ink);
+  --foreground: var(--cream);
   --card: oklch(0.21 0.035 255);
   --card-foreground: var(--cream);
   --popover: oklch(0.21 0.035 255);

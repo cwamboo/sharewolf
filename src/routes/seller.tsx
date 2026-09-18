@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/race/SiteHeader";
 import { computeRacers, formatMoney, isSameSeller, useOrders, useSellerSession } from "@/lib/race-store";
 
@@ -64,18 +65,18 @@ function SellerPage() {
       />
 
       <main className="mx-auto max-w-md px-4 py-6">
-        <section className="rounded-[2rem] border-4 border-ink bg-ink p-5 text-cream shadow-hard-coral">
+        <section className="telemetry-panel race-stripe p-5 text-cream">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-cream/50">Racing as</p>
-              <h1 className="font-display text-2xl font-bold">{seller}</h1>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-mint">Driver profile</p>
+              <h1 className="font-display text-2xl uppercase">{seller}</h1>
             </div>
-            <span className="pill border-cream/30 bg-cream/10 text-cream">{rank > 0 ? `#${rank}` : "not started"}</span>
+            <span className="pill border-mint/30 bg-mint/10 text-cream">{rank > 0 ? `P${rank}` : "GRID READY"}</span>
           </div>
           <div className="mt-5 flex items-end justify-between">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-cream/50">My total</p>
-              <p className="font-display text-5xl font-bold leading-none text-sun">{formatMoney(total)}</p>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-mint">Order volume</p>
+              <p className="font-display text-4xl leading-none text-coral sm:text-5xl">{formatMoney(total)}</p>
             </div>
             <p className="text-xs font-bold text-cream/60">
               {mine.length} order{mine.length === 1 ? "" : "s"}
@@ -84,11 +85,11 @@ function SellerPage() {
         </section>
 
         <form onSubmit={submit} className="card-arcade mt-6 p-5">
-          <h2 className="font-display text-lg font-bold">Order confirmed?</h2>
-          <p className="text-xs font-semibold text-ink/50">Customer first name and the amount. Nothing else.</p>
+          <h2 className="font-display text-lg uppercase">Confirm order</h2>
+          <p className="text-xs font-semibold text-mint">Customer first name and the amount. Nothing else.</p>
 
           <label className="mt-4 block">
-            <span className="text-[11px] font-extrabold uppercase tracking-[0.15em] text-ink/50">Customer</span>
+            <span className="text-[11px] font-extrabold uppercase tracking-[0.15em] text-mint">Customer</span>
             <input
               ref={customerRef}
               type="text"
@@ -97,14 +98,14 @@ function SellerPage() {
               placeholder="e.g. Amina B."
               autoComplete="off"
               required
-              className="mt-1 h-12 w-full rounded-2xl border-2 border-ink/15 bg-cream px-4 text-base font-bold focus:border-ink focus:outline-none"
+              className="mt-1 h-12 w-full border border-mint/25 bg-mint/5 px-4 text-base font-bold text-cream placeholder:text-mint focus:border-coral focus:outline-none"
             />
           </label>
 
           <label className="mt-3 block">
-            <span className="text-[11px] font-extrabold uppercase tracking-[0.15em] text-ink/50">Amount</span>
-            <div className="mt-1 flex h-16 items-center gap-2 rounded-2xl border-2 border-ink/15 bg-cream px-4 focus-within:border-ink">
-              <span className="font-display text-3xl font-bold text-coral">€</span>
+            <span className="text-[11px] font-extrabold uppercase tracking-[0.15em] text-mint">Amount</span>
+            <div className="mt-1 flex h-16 items-center gap-2 border border-mint/25 bg-mint/5 px-4 focus-within:border-coral">
+              <span className="font-display text-3xl text-coral">€</span>
               <input
                 type="text"
                 inputMode="decimal"
@@ -112,61 +113,61 @@ function SellerPage() {
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0"
                 required
-                className="w-full bg-transparent font-display text-3xl font-bold tabular-nums focus:outline-none"
+                className="w-full bg-transparent font-display text-3xl tabular-nums text-cream placeholder:text-mint focus:outline-none"
               />
             </div>
           </label>
 
-          <button
-            type="submit"
-            className="mt-4 h-14 w-full rounded-2xl bg-coral font-display text-lg font-bold text-cream transition active:translate-y-0.5"
-          >
-            {flash ? `+${formatMoney(flash)} logged! 🎉` : "Log order 🏁"}
-          </button>
+          <Button type="submit" className="mt-4 h-14 w-full -skew-x-3 rounded-none bg-coral font-display text-base uppercase text-cream shadow-none hover:bg-coral/90">
+            <span className="skew-x-3">{flash ? `+${formatMoney(flash)} logged` : "Log order"}</span>
+          </Button>
         </form>
 
         <section className="card-arcade mt-6 p-5">
-          <h2 className="mb-3 font-display text-lg font-bold">My orders</h2>
+          <h2 className="mb-3 font-display text-lg uppercase">My orders</h2>
           {mine.length === 0 ? (
-            <p className="py-4 text-center text-sm font-bold text-ink/40">Your first order goes here.</p>
+            <p className="py-4 text-center text-sm font-bold text-mint">Your first order goes here.</p>
           ) : (
             <ul className="space-y-2">
               {mine.map((o) => (
                 <li
                   key={o.id}
-                  className="flex animate-fade-in items-center gap-3 rounded-2xl border-2 border-ink/10 bg-cream px-3 py-2"
+                   className="flex animate-fade-in items-center gap-3 border-b border-mint/15 bg-mint/5 px-3 py-2"
                 >
-                  <span className="text-[11px] font-bold text-ink/40">
+                  <span className="text-[11px] font-bold text-mint">
                     {new Date(o.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </span>
                   <span className="min-w-0 flex-1 truncate text-sm font-bold">{o.customer}</span>
                   <span className="font-display text-sm font-bold text-coral">+{formatMoney(o.amount)}</span>
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="icon"
                     aria-label="Remove order"
                     onClick={() => {
                       if (confirm(`Remove the ${formatMoney(o.amount)} order for ${o.customer}?`)) removeOrder(o.id);
                     }}
-                    className="grid size-7 place-items-center rounded-full text-ink/30 hover:bg-coral/15 hover:text-coral"
+                    className="size-7 rounded-none text-mint hover:bg-coral/15 hover:text-coral"
                   >
                     ×
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>
           )}
         </section>
 
-        <button
+        <Button
           type="button"
+          variant="ghost"
           onClick={() => {
             setSeller(null);
             navigate({ to: "/" });
           }}
-          className="mx-auto mt-6 block text-xs font-bold text-ink/40 underline-offset-2 hover:underline"
+          className="mx-auto mt-6 flex text-xs font-bold text-mint hover:bg-mint/10 hover:text-cream"
         >
           Leave (your orders stay saved under your name)
-        </button>
+        </Button>
       </main>
     </div>
   );
