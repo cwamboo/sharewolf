@@ -23,9 +23,7 @@ export type Racer = {
   lastAt: number;
 };
 
-const ORDERS_KEY = "sprintrace:orders";
 const SELLER_KEY = "sprintrace:seller";
-const EVENT = "sprintrace:change";
 
 export const RACER_COLORS = ["coral", "mint", "grape", "sun"] as const;
 export type RacerColor = (typeof RACER_COLORS)[number];
