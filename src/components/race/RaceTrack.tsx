@@ -12,12 +12,12 @@ const TEXT: Record<string, string> = {
   grape: "text-grape",
   sun: "text-ink/70",
 };
-export function RaceTrack({ racers, highlight }: { racers: Racer[]; highlight?: string | undefined }) {
+export function RaceTrack({ racers, highlight, className }: { racers: Racer[]; highlight?: string | undefined; className?: string }) {
   const max = Math.max(...racers.map((r) => r.total), 1);
 
   return (
-    <section className="p-1">
-      <div className="mb-4 flex items-center justify-between">
+    <section className={`flex min-h-0 flex-col p-1 ${className ?? ""}`}>
+      <div className="mb-3 flex items-center justify-between">
         <h2 className="font-display text-sm uppercase">Track progress</h2>
         <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-mint">Distance = order volume</span>
       </div>
@@ -27,7 +27,7 @@ export function RaceTrack({ racers, highlight }: { racers: Racer[]; highlight?: 
           No racers yet. Sellers join with their name and log their first order to appear here.
         </p>
       ) : (
-        <div className="space-y-3">
+        <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 lg:space-y-3">
           {racers.map((r, i) => {
             const color = colorFor(r.name);
             const pct = Math.max(8, Math.round((r.total / max) * 100));
