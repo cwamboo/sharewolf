@@ -13,15 +13,15 @@ const BADGE: Record<string, string> = {
   sun: "bg-sun text-ink",
 };
 
-export function FreshOrders({ orders, limit = 6 }: { orders: Order[]; limit?: number }) {
+export function FreshOrders({ orders, limit = 6, className }: { orders: Order[]; limit?: number; className?: string }) {
   const latest = [...orders].sort((a, b) => b.at - a.at).slice(0, limit);
   return (
-    <section className="border border-mint/15 bg-ink/60 p-4">
-      <h2 className="mb-4 border-l-2 border-coral pl-2 font-display text-xs uppercase">Comms feed / recent orders</h2>
+    <section className={`flex min-h-0 flex-col border border-mint/15 bg-ink/60 p-4 ${className ?? ""}`}>
+      <h2 className="mb-3 border-l-2 border-coral pl-2 font-display text-xs uppercase">Comms feed / recent orders</h2>
       {latest.length === 0 ? (
         <p className="py-6 text-center text-sm font-bold text-mint">Waiting for the first confirmed order…</p>
       ) : (
-        <div className="space-y-3">
+        <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
           {latest.map((o) => {
             const c = colorFor(o.seller);
             return (
