@@ -40,20 +40,22 @@ export function colorFor(name: string): RacerColor {
 export const formatMoney = (n: number) =>
   new Intl.NumberFormat("fr-BE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
 
-function readOrders(): Order[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(ORDERS_KEY);
-    return raw ? (JSON.parse(raw) as Order[]) : [];
-  } catch {
-    return [];
-  }
+async function fetchOrders(): Promise<Order[]> {
+  const { data, error } = await supabase
+    .from("orders")
+    .select("id, customer_name, amount, created_at, sellers(name)")
+    .order("created_at", { ascending: true })
+    .limit(1000);
+  if (error) throw error;
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    seller: (row.sellers as { name: string } | null)?.name ?? "—",
+    customer: row.customer_name,
+    amount: Number(row.amount),
+    at: new Date(row.created_at).getTime(),
+  }));
 }
 
-function writeOrders(orders: Order[]) {
-  window.localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
-  window.dispatchEvent(new Event(EVENT));
-}
 
 export function computeRacers(orders: Order[]): Racer[] {
   const map = new Map<string, Racer>();
