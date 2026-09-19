@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  addOrder as addOrderFn,
+  joinSeller as joinSellerFn,
+  loadDemo as loadDemoFn,
+  removeOrder as removeOrderFn,
+  resetRace as resetRaceFn,
+} from "@/lib/race.functions";
 
 export type Order = {
   id: string;
