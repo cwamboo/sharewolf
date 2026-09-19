@@ -141,9 +141,15 @@ export function useSellerSession() {
   }, []);
 
   const setSeller = useCallback((name: string | null) => {
-    if (name) window.localStorage.setItem(SELLER_KEY, normalizeName(name));
-    else window.localStorage.removeItem(SELLER_KEY);
-    setSellerState(name ? normalizeName(name) : null);
+    if (name) {
+      const clean = normalizeName(name);
+      window.localStorage.setItem(SELLER_KEY, clean);
+      setSellerState(clean);
+      void joinSellerFn({ data: { name: clean } }).catch((e) => console.error("Failed to join", e));
+    } else {
+      window.localStorage.removeItem(SELLER_KEY);
+      setSellerState(null);
+    }
   }, []);
 
   return { seller, ready, setSeller };
