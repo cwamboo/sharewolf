@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  addOrder as addOrderFn,
+  joinSeller as joinSellerFn,
+  loadDemo as loadDemoFn,
+  removeOrder as removeOrderFn,
+  resetRace as resetRaceFn,
+} from "@/lib/race.functions";
 
 export type Order = {
   id: string;
@@ -15,9 +23,7 @@ export type Racer = {
   lastAt: number;
 };
 
-const ORDERS_KEY = "sprintrace:orders";
 const SELLER_KEY = "sprintrace:seller";
-const EVENT = "sprintrace:change";
 
 export const RACER_COLORS = ["coral", "mint", "grape", "sun"] as const;
 export type RacerColor = (typeof RACER_COLORS)[number];
@@ -34,20 +40,22 @@ export function colorFor(name: string): RacerColor {
 export const formatMoney = (n: number) =>
   new Intl.NumberFormat("fr-BE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
 
-function readOrders(): Order[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = window.localStorage.getItem(ORDERS_KEY);
-    return raw ? (JSON.parse(raw) as Order[]) : [];
-  } catch {
-    return [];
-  }
+async function fetchOrders(): Promise<Order[]> {
+  const { data, error } = await supabase
+    .from("orders")
+    .select("id, customer_name, amount, created_at, sellers(name)")
+    .order("created_at", { ascending: true })
+    .limit(1000);
+  if (error) throw error;
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    seller: (row.sellers as { name: string } | null)?.name ?? "—",
+    customer: row.customer_name,
+    amount: Number(row.amount),
+    at: new Date(row.created_at).getTime(),
+  }));
 }
 
-function writeOrders(orders: Order[]) {
-  window.localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
-  window.dispatchEvent(new Event(EVENT));
-}
 
 export function computeRacers(orders: Order[]): Racer[] {
   const map = new Map<string, Racer>();
@@ -62,67 +70,64 @@ export function computeRacers(orders: Order[]): Racer[] {
   return [...map.values()].sort((a, b) => b.total - a.total || a.lastAt - b.lastAt);
 }
 
-/** Live list of all orders, synced across tabs on this device. */
+/** Live list of all orders, streamed from the database to every device. */
 export function useOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [ready, setReady] = useState(false);
+  const pending = useRef(false);
+
+  const refresh = useCallback(async () => {
+    if (pending.current) return;
+    pending.current = true;
+    try {
+      setOrders(await fetchOrders());
+    } catch (e) {
+      console.error("Failed to load orders", e);
+    } finally {
+      pending.current = false;
+      setReady(true);
+    }
+  }, []);
 
   useEffect(() => {
-    const sync = () => setOrders(readOrders());
-    sync();
-    setReady(true);
-    window.addEventListener("storage", sync);
-    window.addEventListener(EVENT, sync);
+    void refresh();
+    const channel = supabase
+      .channel("sprintrace-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => void refresh())
+      .on("postgres_changes", { event: "*", schema: "public", table: "sellers" }, () => void refresh())
+      .subscribe();
     return () => {
-      window.removeEventListener("storage", sync);
-      window.removeEventListener(EVENT, sync);
+      void supabase.removeChannel(channel);
     };
-  }, []);
+  }, [refresh]);
 
-  const addOrder = useCallback((seller: string, customer: string, amount: number) => {
-    const order: Order = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      seller: normalizeName(seller),
-      customer: normalizeName(customer),
-      amount,
-      at: Date.now(),
-    };
-    writeOrders([...readOrders(), order]);
-    return order;
-  }, []);
+  const addOrder = useCallback(
+    async (seller: string, customer: string, amount: number) => {
+      await addOrderFn({ data: { seller, customer, amount } });
+      await refresh();
+    },
+    [refresh],
+  );
 
-  const removeOrder = useCallback((id: string) => {
-    writeOrders(readOrders().filter((o) => o.id !== id));
-  }, []);
+  const removeOrder = useCallback(
+    async (id: string) => {
+      await removeOrderFn({ data: { id } });
+      await refresh();
+    },
+    [refresh],
+  );
 
-  const resetRace = useCallback(() => writeOrders([]), []);
+  const resetRace = useCallback(async () => {
+    await resetRaceFn();
+    await refresh();
+  }, [refresh]);
 
-  const loadDemo = useCallback(() => {
-    const now = Date.now();
-    const demo: [string, string, number, number][] = [
-      ["Marco Riva", "Amina B.", 620, 2],
-      ["Lena Kova", "Tom H.", 450, 5],
-      ["Dario Font", "Ravi P.", 310, 9],
-      ["Sofia Mar", "Nadia L.", 180, 14],
-      ["Marco Riva", "Jules D.", 1400, 22],
-      ["Lena Kova", "Elise V.", 990, 30],
-      ["Marco Riva", "Karim S.", 2800, 41],
-      ["Lena Kova", "Bram P.", 2500, 55],
-      ["Dario Font", "Léa M.", 1840, 63],
-      ["Sofia Mar", "Noor A.", 1200, 75],
-    ];
-    writeOrders(
-      demo.map(([seller, customer, amount, minAgo], i) => ({
-        id: `demo-${i}`,
-        seller,
-        customer,
-        amount,
-        at: now - minAgo * 60_000,
-      })),
-    );
-  }, []);
+  const loadDemo = useCallback(async () => {
+    await loadDemoFn();
+    await refresh();
+  }, [refresh]);
 
-  return { orders, ready, addOrder, removeOrder, resetRace, loadDemo };
+  return { orders, ready, addOrder, removeOrder, resetRace, loadDemo, refresh };
 }
 
 /** The seller name remembered on this device (Kahoot-style session). */
@@ -136,9 +141,15 @@ export function useSellerSession() {
   }, []);
 
   const setSeller = useCallback((name: string | null) => {
-    if (name) window.localStorage.setItem(SELLER_KEY, normalizeName(name));
-    else window.localStorage.removeItem(SELLER_KEY);
-    setSellerState(name ? normalizeName(name) : null);
+    if (name) {
+      const clean = normalizeName(name);
+      window.localStorage.setItem(SELLER_KEY, clean);
+      setSellerState(clean);
+      void joinSellerFn({ data: { name: clean } }).catch((e) => console.error("Failed to join", e));
+    } else {
+      window.localStorage.removeItem(SELLER_KEY);
+      setSellerState(null);
+    }
   }, []);
 
   return { seller, ready, setSeller };
