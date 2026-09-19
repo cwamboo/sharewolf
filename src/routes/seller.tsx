@@ -46,7 +46,9 @@ function SellerPage() {
     e.preventDefault();
     const value = Number(amount.replace(",", "."));
     if (!customer.trim() || !Number.isFinite(value) || value <= 0) return;
-    addOrder(seller, customer, Math.round(value * 100) / 100);
+    void addOrder(seller, customer, Math.round(value * 100) / 100).catch(() =>
+      alert("Could not save the order. Please check your connection and try again."),
+    );
     setFlash(value);
     setCustomer("");
     setAmount("");
