@@ -109,8 +109,8 @@ export function useOrders() {
   }, [refresh]);
 
   const addOrder = useCallback(
-    async (seller: string, customer: string, amount: number) => {
-      await addOrderFn({ data: { seller, customer, amount } });
+    async (seller: string, customerId: string, amount: number) => {
+      await addOrderFn({ data: { seller, customerId, amount } });
       await refresh();
     },
     [refresh],
