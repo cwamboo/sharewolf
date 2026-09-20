@@ -32,14 +32,58 @@ export const joinSeller = createServerFn({ method: "POST" })
 
 export const addOrder = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) =>
-    z.object({ seller: nameSchema, customer: nameSchema, amount: z.number().positive().max(1_000_000) }).parse(data),
+    z
+      .object({ seller: nameSchema, customerId: z.string().uuid(), amount: z.number().positive().max(1_000_000) })
+      .parse(data),
   )
   .handler(async ({ data }) => {
     const db = await admin();
     const id = await sellerId(data.seller);
+    const customer = await db.from("customers").select("name").eq("id", data.customerId).single();
+    if (customer.error) throw customer.error;
+    const { error } = await db.from("orders").insert({
+      seller_id: id,
+      customer_id: data.customerId,
+      customer_name: customer.data.name,
+      amount: data.amount,
+    });
+    if (error) throw error;
+    return { ok: true };
+  });
+
+/** Customer list management (the scoreboard is built from these). */
+export const addCustomer = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => z.object({ name: nameSchema }).parse(data))
+  .handler(async ({ data }) => {
+    const db = await admin();
+    const clean = normalize(data.name);
     const { error } = await db
-      .from("orders")
-      .insert({ seller_id: id, customer_name: normalize(data.customer), amount: data.amount });
+      .from("customers")
+      .upsert({ name: clean, name_key: clean.toLowerCase() }, { onConflict: "name_key" });
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const renameCustomer = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => z.object({ id: z.string().uuid(), name: nameSchema }).parse(data))
+  .handler(async ({ data }) => {
+    const db = await admin();
+    const clean = normalize(data.name);
+    const { error } = await db
+      .from("customers")
+      .update({ name: clean, name_key: clean.toLowerCase() })
+      .eq("id", data.id);
+    if (error) throw error;
+    const synced = await db.from("orders").update({ customer_name: clean }).eq("customer_id", data.id);
+    if (synced.error) throw synced.error;
+    return { ok: true };
+  });
+
+export const removeCustomer = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => z.object({ id: z.string().uuid() }).parse(data))
+  .handler(async ({ data }) => {
+    const db = await admin();
+    const { error } = await db.from("customers").delete().eq("id", data.id);
     if (error) throw error;
     return { ok: true };
   });
