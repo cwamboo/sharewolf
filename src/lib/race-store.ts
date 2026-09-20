@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
+  addCustomer as addCustomerFn,
   addOrder as addOrderFn,
   joinSeller as joinSellerFn,
   loadDemo as loadDemoFn,
+  removeCustomer as removeCustomerFn,
   removeOrder as removeOrderFn,
+  renameCustomer as renameCustomerFn,
   resetRace as resetRaceFn,
 } from "@/lib/race.functions";
 
@@ -12,9 +15,12 @@ export type Order = {
   id: string;
   seller: string;
   customer: string;
+  customerId: string | null;
   amount: number;
   at: number;
 };
+
+export type Customer = { id: string; name: string };
 
 export type Racer = {
   name: string;
