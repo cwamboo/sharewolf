@@ -163,3 +163,53 @@ export function useSellerSession() {
 }
 
 export const isSameSeller = (a: string, b: string) => keyOf(a) === keyOf(b);
+
+/** The fixed customer list, live from the database. */
+export function useCustomers() {
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [ready, setReady] = useState(false);
+
+  const refresh = useCallback(async () => {
+    const { data, error } = await supabase.from("customers").select("id, name").order("name").limit(1000);
+    if (error) console.error("Failed to load customers", error);
+    else setCustomers(data ?? []);
+    setReady(true);
+  }, []);
+
+  useEffect(() => {
+    void refresh();
+    const channel = supabase
+      .channel("sprintrace-customers")
+      .on("postgres_changes", { event: "*", schema: "public", table: "customers" }, () => void refresh())
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [refresh]);
+
+  const addCustomer = useCallback(
+    async (name: string) => {
+      await addCustomerFn({ data: { name: normalizeName(name) } });
+      await refresh();
+    },
+    [refresh],
+  );
+
+  const renameCustomer = useCallback(
+    async (id: string, name: string) => {
+      await renameCustomerFn({ data: { id, name: normalizeName(name) } });
+      await refresh();
+    },
+    [refresh],
+  );
+
+  const removeCustomer = useCallback(
+    async (id: string) => {
+      await removeCustomerFn({ data: { id } });
+      await refresh();
+    },
+    [refresh],
+  );
+
+  return { customers, ready, addCustomer, renameCustomer, removeCustomer, refresh };
+}
