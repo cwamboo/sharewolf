@@ -49,7 +49,7 @@ export const formatMoney = (n: number) =>
 async function fetchOrders(): Promise<Order[]> {
   const { data, error } = await supabase
     .from("orders")
-    .select("id, customer_name, amount, created_at, sellers(name)")
+    .select("id, customer_name, customer_id, amount, created_at, sellers(name)")
     .order("created_at", { ascending: true })
     .limit(1000);
   if (error) throw error;
@@ -57,17 +57,18 @@ async function fetchOrders(): Promise<Order[]> {
     id: row.id,
     seller: (row.sellers as { name: string } | null)?.name ?? "—",
     customer: row.customer_name,
+    customerId: row.customer_id,
     amount: Number(row.amount),
     at: new Date(row.created_at).getTime(),
   }));
 }
 
-
+/** Scoreboard: totals per customer (sellers are only intermediaries). */
 export function computeRacers(orders: Order[]): Racer[] {
   const map = new Map<string, Racer>();
   for (const o of orders) {
-    const k = keyOf(o.seller);
-    const r = map.get(k) ?? { name: normalizeName(o.seller), total: 0, orders: 0, lastAt: 0 };
+    const k = keyOf(o.customer);
+    const r = map.get(k) ?? { name: normalizeName(o.customer), total: 0, orders: 0, lastAt: 0 };
     r.total += o.amount;
     r.orders += 1;
     r.lastAt = Math.max(r.lastAt, o.at);
