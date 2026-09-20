@@ -14,10 +14,35 @@ export type Database = {
   }
   public: {
     Tables: {
+      customers: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          name_key: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          name_key: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          name_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           amount: number
           created_at: string
+          customer_id: string | null
           customer_name: string
           id: string
           seller_id: string
@@ -26,6 +51,7 @@ export type Database = {
         Insert: {
           amount: number
           created_at?: string
+          customer_id?: string | null
           customer_name: string
           id?: string
           seller_id: string
@@ -34,12 +60,20 @@ export type Database = {
         Update: {
           amount?: number
           created_at?: string
+          customer_id?: string | null
           customer_name?: string
           id?: string
           seller_id?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "orders_seller_id_fkey"
             columns: ["seller_id"]

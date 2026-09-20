@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
+  addCustomer as addCustomerFn,
   addOrder as addOrderFn,
   joinSeller as joinSellerFn,
   loadDemo as loadDemoFn,
+  removeCustomer as removeCustomerFn,
   removeOrder as removeOrderFn,
+  renameCustomer as renameCustomerFn,
   resetRace as resetRaceFn,
 } from "@/lib/race.functions";
 
@@ -12,9 +15,12 @@ export type Order = {
   id: string;
   seller: string;
   customer: string;
+  customerId: string | null;
   amount: number;
   at: number;
 };
+
+export type Customer = { id: string; name: string };
 
 export type Racer = {
   name: string;
@@ -43,7 +49,7 @@ export const formatMoney = (n: number) =>
 async function fetchOrders(): Promise<Order[]> {
   const { data, error } = await supabase
     .from("orders")
-    .select("id, customer_name, amount, created_at, sellers(name)")
+    .select("id, customer_name, customer_id, amount, created_at, sellers(name)")
     .order("created_at", { ascending: true })
     .limit(1000);
   if (error) throw error;
@@ -51,17 +57,18 @@ async function fetchOrders(): Promise<Order[]> {
     id: row.id,
     seller: (row.sellers as { name: string } | null)?.name ?? "—",
     customer: row.customer_name,
+    customerId: row.customer_id,
     amount: Number(row.amount),
     at: new Date(row.created_at).getTime(),
   }));
 }
 
-
+/** Scoreboard: totals per customer (sellers are only intermediaries). */
 export function computeRacers(orders: Order[]): Racer[] {
   const map = new Map<string, Racer>();
   for (const o of orders) {
-    const k = keyOf(o.seller);
-    const r = map.get(k) ?? { name: normalizeName(o.seller), total: 0, orders: 0, lastAt: 0 };
+    const k = keyOf(o.customer);
+    const r = map.get(k) ?? { name: normalizeName(o.customer), total: 0, orders: 0, lastAt: 0 };
     r.total += o.amount;
     r.orders += 1;
     r.lastAt = Math.max(r.lastAt, o.at);
@@ -102,8 +109,8 @@ export function useOrders() {
   }, [refresh]);
 
   const addOrder = useCallback(
-    async (seller: string, customer: string, amount: number) => {
-      await addOrderFn({ data: { seller, customer, amount } });
+    async (seller: string, customerId: string, amount: number) => {
+      await addOrderFn({ data: { seller, customerId, amount } });
       await refresh();
     },
     [refresh],
@@ -156,3 +163,53 @@ export function useSellerSession() {
 }
 
 export const isSameSeller = (a: string, b: string) => keyOf(a) === keyOf(b);
+
+/** The fixed customer list, live from the database. */
+export function useCustomers() {
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [ready, setReady] = useState(false);
+
+  const refresh = useCallback(async () => {
+    const { data, error } = await supabase.from("customers").select("id, name").order("name").limit(1000);
+    if (error) console.error("Failed to load customers", error);
+    else setCustomers(data ?? []);
+    setReady(true);
+  }, []);
+
+  useEffect(() => {
+    void refresh();
+    const channel = supabase
+      .channel("sprintrace-customers")
+      .on("postgres_changes", { event: "*", schema: "public", table: "customers" }, () => void refresh())
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [refresh]);
+
+  const addCustomer = useCallback(
+    async (name: string) => {
+      await addCustomerFn({ data: { name: normalizeName(name) } });
+      await refresh();
+    },
+    [refresh],
+  );
+
+  const renameCustomer = useCallback(
+    async (id: string, name: string) => {
+      await renameCustomerFn({ data: { id, name: normalizeName(name) } });
+      await refresh();
+    },
+    [refresh],
+  );
+
+  const removeCustomer = useCallback(
+    async (id: string) => {
+      await removeCustomerFn({ data: { id } });
+      await refresh();
+    },
+    [refresh],
+  );
+
+  return { customers, ready, addCustomer, renameCustomer, removeCustomer, refresh };
+}
