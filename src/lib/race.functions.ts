@@ -123,8 +123,21 @@ export const loadDemo = createServerFn({ method: "POST" }).handler(async () => {
   for (const [seller] of demo) {
     if (!ids.has(seller)) ids.set(seller, await sellerId(seller));
   }
+  const customerIds = new Map<string, string>();
+  for (const [, customer] of demo) {
+    if (customerIds.has(customer)) continue;
+    const key = customer.toLowerCase();
+    const up = await db
+      .from("customers")
+      .upsert({ name: customer, name_key: key }, { onConflict: "name_key" })
+      .select("id")
+      .single();
+    if (up.error) throw up.error;
+    customerIds.set(customer, up.data.id);
+  }
   const rows = demo.map(([seller, customer, amount, minAgo]) => ({
     seller_id: ids.get(seller)!,
+    customer_id: customerIds.get(customer)!,
     customer_name: customer,
     amount,
     created_at: new Date(now - minAgo * 60_000).toISOString(),
