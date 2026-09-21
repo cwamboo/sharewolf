@@ -87,21 +87,32 @@ function SellerPage() {
 
         <form onSubmit={submit} className="card-arcade mt-6 p-5">
           <h2 className="font-display text-lg uppercase">Confirm order</h2>
-          <p className="text-xs font-semibold text-mint">Customer first name and the amount. Nothing else.</p>
+          <p className="text-xs font-semibold text-mint">Pick the customer and the amount. Nothing else.</p>
 
           <label className="mt-4 block">
             <span className="text-[11px] font-extrabold uppercase tracking-[0.15em] text-mint">Customer</span>
-            <input
+            <select
               ref={customerRef}
-              type="text"
-              value={customer}
-              onChange={(e) => setCustomer(e.target.value)}
-              placeholder="e.g. Amina B."
-              autoComplete="off"
+              value={customerId}
+              onChange={(e) => setCustomerId(e.target.value)}
               required
-              className="mt-1 h-12 w-full border border-mint/25 bg-mint/5 px-4 text-base font-bold text-cream placeholder:text-mint focus:border-coral focus:outline-none"
-            />
+              className="mt-1 h-12 w-full border border-mint/25 bg-mint/5 px-4 text-base font-bold text-cream focus:border-coral focus:outline-none"
+            >
+              <option value="" disabled>
+                {customersReady && customers.length === 0 ? "No customers in the list yet" : "Select a customer…"}
+              </option>
+              {customers.map((c) => (
+                <option key={c.id} value={c.id} className="bg-ink text-cream">
+                  {c.name}
+                </option>
+              ))}
+            </select>
           </label>
+          {customersReady && customers.length === 0 && (
+            <p className="mt-2 text-[11px] font-bold text-coral">
+              Ask the organiser to add customers on the customer list page.
+            </p>
+          )}
 
           <label className="mt-3 block">
             <span className="text-[11px] font-extrabold uppercase tracking-[0.15em] text-mint">Amount</span>
