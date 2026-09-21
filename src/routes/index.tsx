@@ -62,11 +62,11 @@ function Dashboard() {
             <h2 className="font-display text-lg uppercase">Timing tower</h2>
           </div>
           <div className="mb-2 grid grid-cols-[2.5rem_1fr_auto] text-[9px] font-bold uppercase tracking-[0.16em] text-mint">
-            <span>Pos</span><span>Seller</span><span>Volume</span>
+            <span>Pos</span><span>Customer</span><span>Volume</span>
           </div>
           <div className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
             {racers.length === 0 ? (
-              <p className="border-y border-mint/15 py-8 text-center text-xs text-mint">Grid awaiting drivers</p>
+              <p className="border-y border-mint/15 py-8 text-center text-xs text-mint">Grid awaiting customers</p>
             ) : racers.map((r, i) => (
               <div key={r.name} className={`grid grid-cols-[2.5rem_1fr_auto] items-center border-b border-mint/15 px-2 py-2.5 ${i === 0 ? "border-l-4 border-l-coral bg-coral/10" : "bg-mint/5"}`}>
                 <span className={`font-display text-sm ${i === 0 ? "text-coral" : "text-mint"}`}>P{i + 1}</span>
