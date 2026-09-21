@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/race/SiteHeader";
-import { computeRacers, formatMoney, isSameSeller, useOrders, useSellerSession } from "@/lib/race-store";
+import { formatMoney, isSameSeller, useCustomers, useOrders, useSellerSession } from "@/lib/race-store";
 
 export const Route = createFileRoute("/seller")({
   head: () => ({
