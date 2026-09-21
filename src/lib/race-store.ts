@@ -44,7 +44,7 @@ export function colorFor(name: string): RacerColor {
 }
 
 export const formatMoney = (n: number) =>
-  new Intl.NumberFormat("fr-BE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
+  `${new Intl.NumberFormat("fr-BE", { maximumFractionDigits: 0 }).format(n)} PTS`;
 
 async function fetchOrders(): Promise<Order[]> {
   const { data, error } = await supabase
