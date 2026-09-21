@@ -117,7 +117,7 @@ function SellerPage() {
           <label className="mt-3 block">
             <span className="text-[11px] font-extrabold uppercase tracking-[0.15em] text-mint">Amount</span>
             <div className="mt-1 flex h-16 items-center gap-2 border border-mint/25 bg-mint/5 px-4 focus-within:border-coral">
-              <span className="font-display text-3xl text-coral">€</span>
+              <span className="font-display text-3xl text-coral">PTS</span>
               <input
                 type="text"
                 inputMode="decimal"
