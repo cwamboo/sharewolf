@@ -1,6 +1,6 @@
 import type { Racer } from "@/lib/race-store";
 
-const first = (r?: Racer) => r?.name.split(" ")[0] ?? "—";
+const first = (r?: Racer) => r?.name ?? "—";
 
 export function Podium({ racers }: { racers: Racer[] }) {
   const [g, s, b] = racers;
