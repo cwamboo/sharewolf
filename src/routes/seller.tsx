@@ -22,11 +22,12 @@ export const Route = createFileRoute("/seller")({
 function SellerPage() {
   const { seller, ready, setSeller } = useSellerSession();
   const { orders, addOrder, removeOrder } = useOrders();
+  const { customers, ready: customersReady } = useCustomers();
   const navigate = useNavigate();
-  const [customer, setCustomer] = useState("");
+  const [customerId, setCustomerId] = useState("");
   const [amount, setAmount] = useState("");
   const [flash, setFlash] = useState<number | null>(null);
-  const customerRef = useRef<HTMLInputElement>(null);
+  const customerRef = useRef<HTMLSelectElement>(null);
 
   useEffect(() => {
     if (ready && !seller) navigate({ to: "/" });
@@ -37,20 +38,18 @@ function SellerPage() {
     [orders, seller],
   );
   const total = mine.reduce((s, o) => s + o.amount, 0);
-  const racers = useMemo(() => computeRacers(orders), [orders]);
-  const rank = seller ? racers.findIndex((r) => isSameSeller(r.name, seller)) + 1 : 0;
 
   if (!seller) return null;
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const value = Number(amount.replace(",", "."));
-    if (!customer.trim() || !Number.isFinite(value) || value <= 0) return;
-    void addOrder(seller, customer, Math.round(value * 100) / 100).catch(() =>
+    if (!customerId || !Number.isFinite(value) || value <= 0) return;
+    void addOrder(seller, customerId, Math.round(value * 100) / 100).catch(() =>
       alert("Could not save the order. Please check your connection and try again."),
     );
     setFlash(value);
-    setCustomer("");
+    setCustomerId("");
     setAmount("");
     customerRef.current?.focus();
     setTimeout(() => setFlash(null), 1800);
