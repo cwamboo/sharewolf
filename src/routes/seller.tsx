@@ -72,7 +72,7 @@ function SellerPage() {
               <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-mint">Driver profile</p>
               <h1 className="font-display text-2xl uppercase">{seller}</h1>
             </div>
-            <span className="pill border-mint/30 bg-mint/10 text-cream">{rank > 0 ? `P${rank}` : "GRID READY"}</span>
+            <span className="pill border-mint/30 bg-mint/10 text-cream">INTERMEDIARY</span>
           </div>
           <div className="mt-5 flex items-end justify-between">
             <div>
