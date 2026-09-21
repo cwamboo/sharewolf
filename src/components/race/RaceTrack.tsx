@@ -24,7 +24,7 @@ export function RaceTrack({ racers, highlight, className }: { racers: Racer[]; h
 
       {racers.length === 0 ? (
         <p className="border border-mint/20 py-10 text-center text-sm font-bold text-mint">
-          No racers yet. Sellers join with their name and log their first order to appear here.
+          No customers on track yet. Sellers log an order for a customer to move them forward.
         </p>
       ) : (
         <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 lg:space-y-3">

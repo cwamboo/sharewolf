@@ -62,11 +62,11 @@ function Dashboard() {
             <h2 className="font-display text-lg uppercase">Timing tower</h2>
           </div>
           <div className="mb-2 grid grid-cols-[2.5rem_1fr_auto] text-[9px] font-bold uppercase tracking-[0.16em] text-mint">
-            <span>Pos</span><span>Seller</span><span>Volume</span>
+            <span>Pos</span><span>Customer</span><span>Volume</span>
           </div>
           <div className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
             {racers.length === 0 ? (
-              <p className="border-y border-mint/15 py-8 text-center text-xs text-mint">Grid awaiting drivers</p>
+              <p className="border-y border-mint/15 py-8 text-center text-xs text-mint">Grid awaiting customers</p>
             ) : racers.map((r, i) => (
               <div key={r.name} className={`grid grid-cols-[2.5rem_1fr_auto] items-center border-b border-mint/15 px-2 py-2.5 ${i === 0 ? "border-l-4 border-l-coral bg-coral/10" : "bg-mint/5"}`}>
                 <span className={`font-display text-sm ${i === 0 ? "text-coral" : "text-mint"}`}>P{i + 1}</span>
@@ -113,17 +113,18 @@ function Dashboard() {
           </section>
 
           <Podium racers={racers} />
-          <RaceTrack racers={racers} highlight={seller ?? undefined} className="flex-1" />
+          <RaceTrack racers={racers} className="flex-1" />
 
-          {ready && (
-            <div className="flex shrink-0 justify-end">
-              {orders.length === 0 ? (
-                <Button type="button" variant="outline" onClick={loadDemo} className="border-mint/25 bg-mint/5 text-xs uppercase text-cream hover:bg-coral hover:text-cream">Load demo grid</Button>
-              ) : (
-                <Button type="button" variant="outline" onClick={() => { if (confirm("Reset the whole race? All orders will be removed.")) resetRace(); }} className="border-mint/25 bg-mint/5 text-xs uppercase text-cream hover:bg-destructive hover:text-cream">Reset grid</Button>
-              )}
-            </div>
-          )}
+          <div className="flex shrink-0 items-center justify-end gap-2">
+            <Link to="/customers" className="pill border border-mint/25 bg-mint/5 text-xs uppercase text-cream hover:bg-coral">
+              Manage customers
+            </Link>
+            {ready && (orders.length === 0 ? (
+              <Button type="button" variant="outline" onClick={loadDemo} className="border-mint/25 bg-mint/5 text-xs uppercase text-cream hover:bg-coral hover:text-cream">Load demo grid</Button>
+            ) : (
+              <Button type="button" variant="outline" onClick={() => { if (confirm("Reset the whole race? All orders will be removed.")) resetRace(); }} className="border-mint/25 bg-mint/5 text-xs uppercase text-cream hover:bg-destructive hover:text-cream">Reset grid</Button>
+            ))}
+          </div>
         </div>
 
         <aside className="flex min-w-0 flex-col gap-4 md:col-span-12 lg:col-span-3 lg:min-h-0">

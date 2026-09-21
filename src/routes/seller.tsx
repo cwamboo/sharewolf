@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/race/SiteHeader";
-import { computeRacers, formatMoney, isSameSeller, useOrders, useSellerSession } from "@/lib/race-store";
+import { formatMoney, isSameSeller, useCustomers, useOrders, useSellerSession } from "@/lib/race-store";
 
 export const Route = createFileRoute("/seller")({
   head: () => ({
@@ -22,11 +22,12 @@ export const Route = createFileRoute("/seller")({
 function SellerPage() {
   const { seller, ready, setSeller } = useSellerSession();
   const { orders, addOrder, removeOrder } = useOrders();
+  const { customers, ready: customersReady } = useCustomers();
   const navigate = useNavigate();
-  const [customer, setCustomer] = useState("");
+  const [customerId, setCustomerId] = useState("");
   const [amount, setAmount] = useState("");
   const [flash, setFlash] = useState<number | null>(null);
-  const customerRef = useRef<HTMLInputElement>(null);
+  const customerRef = useRef<HTMLSelectElement>(null);
 
   useEffect(() => {
     if (ready && !seller) navigate({ to: "/" });
@@ -37,20 +38,18 @@ function SellerPage() {
     [orders, seller],
   );
   const total = mine.reduce((s, o) => s + o.amount, 0);
-  const racers = useMemo(() => computeRacers(orders), [orders]);
-  const rank = seller ? racers.findIndex((r) => isSameSeller(r.name, seller)) + 1 : 0;
 
   if (!seller) return null;
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const value = Number(amount.replace(",", "."));
-    if (!customer.trim() || !Number.isFinite(value) || value <= 0) return;
-    void addOrder(seller, customer, Math.round(value * 100) / 100).catch(() =>
+    if (!customerId || !Number.isFinite(value) || value <= 0) return;
+    void addOrder(seller, customerId, Math.round(value * 100) / 100).catch(() =>
       alert("Could not save the order. Please check your connection and try again."),
     );
     setFlash(value);
-    setCustomer("");
+    setCustomerId("");
     setAmount("");
     customerRef.current?.focus();
     setTimeout(() => setFlash(null), 1800);
@@ -73,7 +72,7 @@ function SellerPage() {
               <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-mint">Driver profile</p>
               <h1 className="font-display text-2xl uppercase">{seller}</h1>
             </div>
-            <span className="pill border-mint/30 bg-mint/10 text-cream">{rank > 0 ? `P${rank}` : "GRID READY"}</span>
+            <span className="pill border-mint/30 bg-mint/10 text-cream">INTERMEDIARY</span>
           </div>
           <div className="mt-5 flex items-end justify-between">
             <div>
@@ -88,21 +87,32 @@ function SellerPage() {
 
         <form onSubmit={submit} className="card-arcade mt-6 p-5">
           <h2 className="font-display text-lg uppercase">Confirm order</h2>
-          <p className="text-xs font-semibold text-mint">Customer first name and the amount. Nothing else.</p>
+          <p className="text-xs font-semibold text-mint">Pick the customer and the amount. Nothing else.</p>
 
           <label className="mt-4 block">
             <span className="text-[11px] font-extrabold uppercase tracking-[0.15em] text-mint">Customer</span>
-            <input
+            <select
               ref={customerRef}
-              type="text"
-              value={customer}
-              onChange={(e) => setCustomer(e.target.value)}
-              placeholder="e.g. Amina B."
-              autoComplete="off"
+              value={customerId}
+              onChange={(e) => setCustomerId(e.target.value)}
               required
-              className="mt-1 h-12 w-full border border-mint/25 bg-mint/5 px-4 text-base font-bold text-cream placeholder:text-mint focus:border-coral focus:outline-none"
-            />
+              className="mt-1 h-12 w-full border border-mint/25 bg-mint/5 px-4 text-base font-bold text-cream focus:border-coral focus:outline-none"
+            >
+              <option value="" disabled>
+                {customersReady && customers.length === 0 ? "No customers in the list yet" : "Select a customer…"}
+              </option>
+              {customers.map((c) => (
+                <option key={c.id} value={c.id} className="bg-ink text-cream">
+                  {c.name}
+                </option>
+              ))}
+            </select>
           </label>
+          {customersReady && customers.length === 0 && (
+            <p className="mt-2 text-[11px] font-bold text-coral">
+              Ask the organiser to add customers on the customer list page.
+            </p>
+          )}
 
           <label className="mt-3 block">
             <span className="text-[11px] font-extrabold uppercase tracking-[0.15em] text-mint">Amount</span>
