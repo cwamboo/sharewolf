@@ -113,7 +113,7 @@ function Dashboard() {
           </section>
 
           <Podium racers={racers} />
-          <RaceTrack racers={racers} highlight={seller ?? undefined} className="flex-1" />
+          <RaceTrack racers={racers} className="flex-1" />
 
           <div className="flex shrink-0 items-center justify-end gap-2">
             <Link to="/customers" className="pill border border-mint/25 bg-mint/5 text-xs uppercase text-cream hover:bg-coral">
