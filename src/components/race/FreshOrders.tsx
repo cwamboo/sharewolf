@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { colorFor, formatMoney, type Order } from "@/lib/race-store";
 
 const AVATAR: Record<string, string> = {
@@ -17,7 +18,11 @@ export function FreshOrders({ orders, limit = 6, className }: { orders: Order[];
   const latest = [...orders].sort((a, b) => b.at - a.at).slice(0, limit);
   return (
     <section className={`flex min-h-0 flex-col border border-mint/15 bg-ink/60 p-4 ${className ?? ""}`}>
-      <h2 className="mb-3 border-l-2 border-coral pl-2 font-display text-xs uppercase">Comms feed / recent orders</h2>
+      <h2 className="mb-3 border-l-2 border-coral pl-2 font-display text-xs uppercase">
+        <Link to="/breakdown" className="transition-colors hover:text-coral">
+          Comms feed / recent orders <span className="text-mint">→</span>
+        </Link>
+      </h2>
       {latest.length === 0 ? (
         <p className="py-6 text-center text-sm font-bold text-mint">Waiting for the first confirmed order…</p>
       ) : (
