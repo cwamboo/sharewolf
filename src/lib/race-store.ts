@@ -177,9 +177,9 @@ export function useCustomers() {
   const [ready, setReady] = useState(false);
 
   const refresh = useCallback(async () => {
-    const { data, error } = await supabase.from("customers").select("id, name").order("name").limit(1000);
+    const { data, error } = await supabase.from("customers").select("id, name, site_id").order("name").limit(1000);
     if (error) console.error("Failed to load customers", error);
-    else setCustomers(data ?? []);
+    else setCustomers((data ?? []).map((c) => ({ id: c.id, name: c.name, siteId: c.site_id })));
     setReady(true);
   }, []);
 
