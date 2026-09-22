@@ -55,7 +55,7 @@ export const formatMoney = (n: number) =>
 async function fetchOrders(): Promise<Order[]> {
   const { data, error } = await supabase
     .from("orders")
-    .select("id, customer_name, customer_id, amount, created_at, sellers(name)")
+    .select("id, customer_name, customer_id, amount, created_at, sellers(name), customers(site_id)")
     .order("created_at", { ascending: true })
     .limit(1000);
   if (error) throw error;
@@ -64,6 +64,7 @@ async function fetchOrders(): Promise<Order[]> {
     seller: (row.sellers as { name: string } | null)?.name ?? "—",
     customer: row.customer_name,
     customerId: row.customer_id,
+    siteId: (row.customers as { site_id: string | null } | null)?.site_id ?? null,
     amount: Number(row.amount),
     at: new Date(row.created_at).getTime(),
   }));
