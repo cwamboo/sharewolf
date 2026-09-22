@@ -20,6 +20,7 @@ export type Database = {
           id: string
           name: string
           name_key: string
+          site_id: string | null
           updated_at: string
         }
         Insert: {
@@ -27,6 +28,7 @@ export type Database = {
           id?: string
           name: string
           name_key: string
+          site_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -34,9 +36,18 @@ export type Database = {
           id?: string
           name?: string
           name_key?: string
+          site_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "customers_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       orders: {
         Row: {
@@ -84,6 +95,30 @@ export type Database = {
         ]
       }
       sellers: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          name_key: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          name_key: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          name_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sites: {
         Row: {
           created_at: string
           id: string
