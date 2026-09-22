@@ -195,8 +195,16 @@ export function useCustomers() {
   }, [refresh]);
 
   const addCustomer = useCallback(
-    async (name: string) => {
-      await addCustomerFn({ data: { name: normalizeName(name) } });
+    async (name: string, siteId?: string | null) => {
+      await addCustomerFn({ data: { name: normalizeName(name), siteId: siteId ?? null } });
+      await refresh();
+    },
+    [refresh],
+  );
+
+  const setCustomerSite = useCallback(
+    async (id: string, siteId: string | null) => {
+      await setCustomerSiteFn({ data: { id, siteId } });
       await refresh();
     },
     [refresh],
