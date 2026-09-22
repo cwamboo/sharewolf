@@ -226,5 +226,55 @@ export function useCustomers() {
     [refresh],
   );
 
-  return { customers, ready, addCustomer, renameCustomer, removeCustomer, refresh };
+  return { customers, ready, addCustomer, renameCustomer, removeCustomer, setCustomerSite, refresh };
+}
+
+/** The list of sites customers belong to, live from the database. */
+export function useSites() {
+  const [sites, setSites] = useState<Site[]>([]);
+  const [ready, setReady] = useState(false);
+
+  const refresh = useCallback(async () => {
+    const { data, error } = await supabase.from("sites").select("id, name").order("name").limit(1000);
+    if (error) console.error("Failed to load sites", error);
+    else setSites(data ?? []);
+    setReady(true);
+  }, []);
+
+  useEffect(() => {
+    void refresh();
+    const channel = supabase
+      .channel("sprintrace-sites")
+      .on("postgres_changes", { event: "*", schema: "public", table: "sites" }, () => void refresh())
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [refresh]);
+
+  const addSite = useCallback(
+    async (name: string) => {
+      await addSiteFn({ data: { name: normalizeName(name) } });
+      await refresh();
+    },
+    [refresh],
+  );
+
+  const renameSite = useCallback(
+    async (id: string, name: string) => {
+      await renameSiteFn({ data: { id, name: normalizeName(name) } });
+      await refresh();
+    },
+    [refresh],
+  );
+
+  const removeSite = useCallback(
+    async (id: string) => {
+      await removeSiteFn({ data: { id } });
+      await refresh();
+    },
+    [refresh],
+  );
+
+  return { sites, ready, addSite, renameSite, removeSite, refresh };
 }
