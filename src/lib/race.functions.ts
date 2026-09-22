@@ -53,13 +53,18 @@ export const addOrder = createServerFn({ method: "POST" })
 
 /** Customer list management (the scoreboard is built from these). */
 export const addCustomer = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => z.object({ name: nameSchema }).parse(data))
+  .inputValidator((data: unknown) =>
+    z.object({ name: nameSchema, siteId: z.string().uuid().nullable().optional() }).parse(data),
+  )
   .handler(async ({ data }) => {
     const db = await admin();
     const clean = normalize(data.name);
     const { error } = await db
       .from("customers")
-      .upsert({ name: clean, name_key: clean.toLowerCase() }, { onConflict: "name_key" });
+      .upsert(
+        { name: clean, name_key: clean.toLowerCase(), site_id: data.siteId ?? null },
+        { onConflict: "name_key" },
+      );
     if (error) throw error;
     return { ok: true };
   });
@@ -76,6 +81,52 @@ export const renameCustomer = createServerFn({ method: "POST" })
     if (error) throw error;
     const synced = await db.from("orders").update({ customer_name: clean }).eq("customer_id", data.id);
     if (synced.error) throw synced.error;
+    return { ok: true };
+  });
+
+/** Site management — customers are attached to a site. */
+export const addSite = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => z.object({ name: nameSchema }).parse(data))
+  .handler(async ({ data }) => {
+    const db = await admin();
+    const clean = normalize(data.name);
+    const { error } = await db
+      .from("sites")
+      .upsert({ name: clean, name_key: clean.toLowerCase() }, { onConflict: "name_key" });
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const renameSite = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => z.object({ id: z.string().uuid(), name: nameSchema }).parse(data))
+  .handler(async ({ data }) => {
+    const db = await admin();
+    const clean = normalize(data.name);
+    const { error } = await db
+      .from("sites")
+      .update({ name: clean, name_key: clean.toLowerCase() })
+      .eq("id", data.id);
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const removeSite = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => z.object({ id: z.string().uuid() }).parse(data))
+  .handler(async ({ data }) => {
+    const db = await admin();
+    const { error } = await db.from("sites").delete().eq("id", data.id);
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const setCustomerSite = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) =>
+    z.object({ id: z.string().uuid(), siteId: z.string().uuid().nullable() }).parse(data),
+  )
+  .handler(async ({ data }) => {
+    const db = await admin();
+    const { error } = await db.from("customers").update({ site_id: data.siteId }).eq("id", data.id);
+    if (error) throw error;
     return { ok: true };
   });
 
