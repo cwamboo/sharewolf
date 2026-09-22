@@ -3,12 +3,16 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   addCustomer as addCustomerFn,
   addOrder as addOrderFn,
+  addSite as addSiteFn,
   joinSeller as joinSellerFn,
   loadDemo as loadDemoFn,
   removeCustomer as removeCustomerFn,
   removeOrder as removeOrderFn,
+  removeSite as removeSiteFn,
   renameCustomer as renameCustomerFn,
+  renameSite as renameSiteFn,
   resetRace as resetRaceFn,
+  setCustomerSite as setCustomerSiteFn,
 } from "@/lib/race.functions";
 
 export type Order = {
@@ -16,11 +20,13 @@ export type Order = {
   seller: string;
   customer: string;
   customerId: string | null;
+  siteId: string | null;
   amount: number;
   at: number;
 };
 
-export type Customer = { id: string; name: string };
+export type Customer = { id: string; name: string; siteId: string | null };
+export type Site = { id: string; name: string };
 
 export type Racer = {
   name: string;
