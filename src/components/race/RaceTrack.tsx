@@ -8,9 +8,9 @@ const BAR: Record<string, string> = {
 };
 const TEXT: Record<string, string> = {
   coral: "text-coral",
-  mint: "text-mint",
-  grape: "text-grape",
-  sun: "text-ink/70",
+  mint: "text-cream",
+  grape: "text-sun",
+  sun: "text-cream",
 };
 export function RaceTrack({ racers, highlight, className }: { racers: Racer[]; highlight?: string | undefined; className?: string }) {
   const max = Math.max(...racers.map((r) => r.total), 1);
