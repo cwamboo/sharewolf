@@ -26,10 +26,16 @@ export const Route = createFileRoute("/")({
 });
 
 function Dashboard() {
-  const { orders, ready, loadDemo, resetRace } = useOrders();
+  const { orders: allOrders, ready, loadDemo, resetRace } = useOrders();
+  const { sites } = useSites();
   const { seller, setSeller } = useSellerSession();
   const navigate = useNavigate();
   const [name, setName] = useState("");
+  const [siteFilter, setSiteFilter] = useState("");
+  const orders = useMemo(
+    () => (siteFilter ? allOrders.filter((o) => o.siteId === siteFilter) : allOrders),
+    [allOrders, siteFilter],
+  );
   const racers = useMemo(() => computeRacers(orders), [orders]);
   const total = racers.reduce((s, r) => s + r.total, 0);
 
