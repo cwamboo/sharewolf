@@ -7,7 +7,7 @@ import { RaceTrack } from "@/components/race/RaceTrack";
 import { FreshOrders } from "@/components/race/FreshOrders";
 import { Podium } from "@/components/race/Podium";
 import { QrCode } from "@/components/race/QrCode";
-import { computeRacers, formatMoney, useOrders, useSellerSession } from "@/lib/race-store";
+import { computeRacers, formatMoney, useOrders, useSellerSession, useSites } from "@/lib/race-store";
 
 const JOIN_URL = "https://seller-sprint-showcase.lovable.app";
 
@@ -26,10 +26,16 @@ export const Route = createFileRoute("/")({
 });
 
 function Dashboard() {
-  const { orders, ready, loadDemo, resetRace } = useOrders();
+  const { orders: allOrders, ready, loadDemo, resetRace } = useOrders();
+  const { sites } = useSites();
   const { seller, setSeller } = useSellerSession();
   const navigate = useNavigate();
   const [name, setName] = useState("");
+  const [siteFilter, setSiteFilter] = useState("");
+  const orders = useMemo(
+    () => (siteFilter ? allOrders.filter((o) => o.siteId === siteFilter) : allOrders),
+    [allOrders, siteFilter],
+  );
   const racers = useMemo(() => computeRacers(orders), [orders]);
   const total = racers.reduce((s, r) => s + r.total, 0);
 
@@ -106,9 +112,22 @@ function Dashboard() {
               <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-coral">Live championship</p>
               <h1 className="mt-1 truncate font-display text-3xl uppercase leading-none xl:text-4xl">Seller Grand Prix</h1>
             </div>
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 items-center gap-3">
+              <select
+                value={siteFilter}
+                onChange={(e) => setSiteFilter(e.target.value)}
+                aria-label="Filter by site"
+                className="h-9 border border-mint/25 bg-mint/5 px-2 text-[11px] font-bold uppercase tracking-[0.1em] text-cream focus:border-coral focus:outline-none"
+              >
+                <option value="">All sites</option>
+                {sites.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
               <span className="size-2 animate-pulse rounded-full bg-coral" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-mint">Live telemetry</span>
+              <span className="hidden text-[10px] font-bold uppercase tracking-[0.18em] text-mint xl:inline">Live telemetry</span>
             </div>
           </section>
 
