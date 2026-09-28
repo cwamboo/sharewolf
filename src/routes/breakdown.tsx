@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { SiteHeader } from "@/components/race/SiteHeader";
-import { computeRacers, formatMoney, useOrders } from "@/lib/race-store";
+import { computeRacers, formatMoney, useOrders, useSites } from "@/lib/race-store";
 
 export const Route = createFileRoute("/breakdown")({
   head: () => ({
@@ -19,6 +19,7 @@ export const Route = createFileRoute("/breakdown")({
 
 function BreakdownPage() {
   const { orders, ready } = useOrders();
+  const { sites } = useSites();
 
   const racers = useMemo(() => computeRacers(orders), [orders]);
   const grandTotal = racers.reduce((s, r) => s + r.total, 0);
@@ -74,7 +75,14 @@ function BreakdownPage() {
                   <span className="grid size-8 place-items-center bg-coral font-display text-sm text-cream">
                     P{i + 1}
                   </span>
-                  <h2 className="font-display text-base uppercase">{r.name}</h2>
+                  <h2 className="font-display text-base uppercase">
+                    {r.name}
+                    {sites.find((s) => s.id === r.siteId)?.name && (
+                      <span className="ml-2 text-[10px] font-bold not-italic tracking-[0.14em] text-mint/70">
+                        {sites.find((s) => s.id === r.siteId)?.name}
+                      </span>
+                    )}
+                  </h2>
                   <span className="ml-auto font-display text-lg text-coral">{formatMoney(r.total)}</span>
                   <span className="text-xs font-bold uppercase text-mint">
                     {r.orders} order{r.orders === 1 ? "" : "s"}
