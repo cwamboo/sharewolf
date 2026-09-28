@@ -78,9 +78,12 @@ export function computeRacers(orders: Order[]): Racer[] {
     const k = keyOf(o.customer);
     const r = map.get(k) ?? { name: normalizeName(o.customer), siteId: o.siteId ?? null, total: 0, orders: 0, lastAt: 0 };
     if (!r.siteId && o.siteId) r.siteId = o.siteId;
-    r.total += o.amount;
+    // Score = latest value communicated for this customer (not a sum)
+    if (o.at >= r.lastAt) {
+      r.total = o.amount;
+      r.lastAt = o.at;
+    }
     r.orders += 1;
-    r.lastAt = Math.max(r.lastAt, o.at);
     map.set(k, r);
   }
   return [...map.values()].sort((a, b) => b.total - a.total || a.lastAt - b.lastAt);
