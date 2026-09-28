@@ -4,6 +4,7 @@ import {
   formatDelta,
   formatMoney,
   withDeltas,
+  type Order,
   type OrderWithDelta,
 } from "@/lib/race-store";
 
