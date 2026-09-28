@@ -30,6 +30,7 @@ export type Site = { id: string; name: string };
 
 export type Racer = {
   name: string;
+  siteId: string | null;
   total: number;
   orders: number;
   lastAt: number;
@@ -75,7 +76,8 @@ export function computeRacers(orders: Order[]): Racer[] {
   const map = new Map<string, Racer>();
   for (const o of orders) {
     const k = keyOf(o.customer);
-    const r = map.get(k) ?? { name: normalizeName(o.customer), total: 0, orders: 0, lastAt: 0 };
+    const r = map.get(k) ?? { name: normalizeName(o.customer), siteId: o.siteId ?? null, total: 0, orders: 0, lastAt: 0 };
+    if (!r.siteId && o.siteId) r.siteId = o.siteId;
     r.total += o.amount;
     r.orders += 1;
     r.lastAt = Math.max(r.lastAt, o.at);

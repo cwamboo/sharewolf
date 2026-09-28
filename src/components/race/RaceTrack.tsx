@@ -1,4 +1,4 @@
-import { colorFor, formatMoney, type Racer } from "@/lib/race-store";
+import { colorFor, formatMoney, type Racer, type Site } from "@/lib/race-store";
 
 const BAR: Record<string, string> = {
   coral: "bg-coral",
@@ -12,8 +12,9 @@ const TEXT: Record<string, string> = {
   grape: "text-sun",
   sun: "text-cream",
 };
-export function RaceTrack({ racers, highlight, className }: { racers: Racer[]; highlight?: string | undefined; className?: string }) {
+export function RaceTrack({ racers, sites, highlight, className }: { racers: Racer[]; sites: Site[]; highlight?: string | undefined; className?: string }) {
   const max = Math.max(...racers.map((r) => r.total), 1);
+  const siteName = (siteId: string | null) => sites.find((s) => s.id === siteId)?.name ?? null;
 
   return (
     <section className={`flex min-h-0 flex-col p-1 ${className ?? ""}`}>
@@ -41,6 +42,7 @@ export function RaceTrack({ racers, highlight, className }: { racers: Racer[]; h
                     </span>
                     <span className="truncate text-sm font-bold uppercase italic">
                       {r.name}
+                      {siteName(r.siteId) && <span className="ml-2 text-[10px] font-bold not-italic tracking-[0.14em] text-mint/70">{siteName(r.siteId)}</span>}
                       {me && <span className="ml-2 text-[10px] not-italic text-coral">YOU</span>}
                     </span>
                   </div>
