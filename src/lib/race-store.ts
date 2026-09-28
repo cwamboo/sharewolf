@@ -89,6 +89,29 @@ export function computeRacers(orders: Order[]): Racer[] {
   return [...map.values()].sort((a, b) => b.total - a.total || a.lastAt - b.lastAt);
 }
 
+export type OrderWithDelta = Order & { prev: number | null; delta: number | null };
+
+/**
+ * Annotates each order with the previous value for the same customer and the
+ * delta between them (null delta = first entry for that customer).
+ */
+export function withDeltas(orders: Order[]): OrderWithDelta[] {
+  const last = new Map<string, number>();
+  return [...orders]
+    .sort((a, b) => a.at - b.at)
+    .map((o) => {
+      const k = keyOf(o.customer);
+      const prev = last.has(k) ? (last.get(k) as number) : null;
+      last.set(k, o.amount);
+      return { ...o, prev, delta: prev === null ? null : o.amount - prev };
+    });
+}
+
+const fmt = (n: number) => new Intl.NumberFormat("fr-BE", { maximumFractionDigits: 0 }).format(n);
+
+/** Signed delta, e.g. "+250" / "−100" / "±0". */
+export const formatDelta = (n: number) => (n > 0 ? `+${fmt(n)}` : n < 0 ? `−${fmt(-n)}` : "±0");
+
 /** Live list of all orders, streamed from the database to every device. */
 export function useOrders() {
   const [orders, setOrders] = useState<Order[]>([]);

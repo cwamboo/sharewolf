@@ -1,5 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { colorFor, formatMoney, type Order } from "@/lib/race-store";
+import {
+  colorFor,
+  formatDelta,
+  formatMoney,
+  withDeltas,
+  type Order,
+  type OrderWithDelta,
+} from "@/lib/race-store";
 
 const AVATAR: Record<string, string> = {
   coral: "bg-coral/15 text-coral",
@@ -7,15 +14,33 @@ const AVATAR: Record<string, string> = {
   grape: "bg-grape/15 text-grape",
   sun: "bg-sun/30 text-cream",
 };
-const BADGE: Record<string, string> = {
-  coral: "bg-coral text-cream",
-  mint: "bg-mint text-ink",
-  grape: "bg-grape text-cream",
-  sun: "bg-sun text-ink",
-};
+
+function DeltaBadge({ o }: { o: OrderWithDelta }) {
+  if (o.delta === null) {
+    // First value communicated for this customer
+    return <span className="px-3 py-1 text-sm font-bold text-mint">{formatMoney(o.amount)}</span>;
+  }
+  if (o.delta > 0) {
+    return (
+      <span className="bg-coral px-3 py-1 text-sm font-bold text-cream">
+        ▲ {formatDelta(o.delta)}
+      </span>
+    );
+  }
+  if (o.delta < 0) {
+    return (
+      <span className="bg-destructive px-3 py-1 text-sm font-bold text-destructive-foreground">
+        ▼ {formatDelta(o.delta)}
+      </span>
+    );
+  }
+  return <span className="px-3 py-1 text-sm font-bold text-mint">= {formatDelta(o.delta)}</span>;
+}
 
 export function FreshOrders({ orders, limit = 6, className }: { orders: Order[]; limit?: number; className?: string }) {
-  const latest = [...orders].sort((a, b) => b.at - a.at).slice(0, limit);
+  const latest = withDeltas(orders)
+    .sort((a, b) => b.at - a.at)
+    .slice(0, limit);
   return (
     <section className={`flex min-h-0 flex-col border border-mint/15 bg-ink/60 p-4 ${className ?? ""}`}>
       <h2 className="mb-3 border-l-2 border-coral pl-2 font-display text-xs uppercase">
@@ -45,9 +70,12 @@ export function FreshOrders({ orders, limit = 6, className }: { orders: Order[];
                   </p>
                   <p className="text-[11px] font-semibold text-mint">
                     {new Date(o.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    {o.prev !== null && (
+                      <span className="text-ink/40"> · was {formatMoney(o.prev)}</span>
+                    )}
                   </p>
                 </div>
-                <span className={`px-3 py-1 text-sm font-bold ${BADGE[c]}`}>+{formatMoney(o.amount)}</span>
+                <DeltaBadge o={o} />
               </div>
             );
           })}
