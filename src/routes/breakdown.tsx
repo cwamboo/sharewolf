@@ -27,14 +27,16 @@ function BreakdownPage() {
   // Per customer → per seller contribution
   const breakdown = useMemo(() => {
     return racers.map((r) => {
-      const mine = orders.filter((o) => o.customer === r.name);
+      const mine = orders.filter((o) => o.customer.toLowerCase() === r.name.toLowerCase());
+      const latest = mine.reduce<(typeof mine)[number] | null>((a, o) => (!a || o.at >= a.at ? o : a), null);
       const bySeller = new Map<string, { total: number; count: number }>();
       for (const o of mine) {
         const s = bySeller.get(o.seller) ?? { total: 0, count: 0 };
-        s.total += o.amount;
         s.count += 1;
         bySeller.set(o.seller, s);
       }
+      // Only the latest communicated value counts, credited to the seller who sent it
+      if (latest) bySeller.get(latest.seller)!.total = latest.amount;
       const sellers = [...bySeller.entries()]
         .map(([name, v]) => ({ name, ...v }))
         .sort((a, b) => b.total - a.total);

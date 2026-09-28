@@ -150,7 +150,7 @@ function SellerPage() {
                     {new Date(o.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </span>
                   <span className="min-w-0 flex-1 truncate text-sm font-bold">{o.customer}</span>
-                  <span className="font-display text-sm font-bold text-coral">+{formatMoney(o.amount)}</span>
+                  <span className="font-display text-sm font-bold text-coral">{formatMoney(o.amount)}</span>
                   <Button
                     type="button"
                     variant="ghost"
