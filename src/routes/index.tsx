@@ -9,7 +9,7 @@ import { Podium } from "@/components/race/Podium";
 import { QrCode } from "@/components/race/QrCode";
 import { computeRacers, formatMoney, useOrders, useSellerSession, useSites } from "@/lib/race-store";
 
-const JOIN_URL = "https://seller-sprint-showcase.lovable.app";
+const JOIN_URL = "https://televente-wolf.lovable.app/";
 
 export const Route = createFileRoute("/")({
   head: () => ({
